@@ -12,7 +12,7 @@ function preload() {
 function setup() {
     createCanvas(600, 600);
     s = {};
-    s.bgColor = '#222222';
+    s.bgColor = '#caa5a5';
     s.rowCount = 15;
     s.columnCount = 8;
     s.seed = floor(random(10000));
@@ -22,6 +22,9 @@ function setup() {
     s.oscModFrequency = 0.1;
     s.activeImageIndex = 0;
     s.maxRotation = 60;
+    s.randomDisplacementAmplitude = 100;
+    s.polygonPointCount = 4;
+    s.rectAspectRatio = 2;
     initColors();
     background(s.bgColor);
     let gui = new dat.GUI();
@@ -36,14 +39,17 @@ function setup() {
         s.columnCount = floor(value);
         initColors();
     });
-    //gui.add(this, 'initColors');
-    gui.addColor(s, 'bgColor').name('Couleur de fond');
-    let activeImageIndexController = gui.add(s, 'activeImageIndex', [...webImages.keys()]).name('Image');
+    gui.add(this, 'initColors');
+    gui.addColor(s, 'bgColor');
+    let activeImageIndexController = gui.add(s, 'activeImageIndex', [...webImages.keys()]);
     activeImageIndexController.onChange(value => {
         s.activeImageIndex = value;
         initColors();
     });
     gui.add(s, 'maxRotation', 0, 180);
+    gui.add(s, 'randomDisplacementAmplitude', 0, 200);
+    gui.add(s, 'polygonPointCount', 3, 20);
+    gui.add(s, 'rectAspectRatio', 1, 15);
 }
 
 function initColors() {
@@ -63,6 +69,7 @@ function draw() {
 }
 
 function drawGrid(w, h) {
+    randomSeed(0)
     let cellWidth = w / s.columnCount;
     let cellHeight = h / s.rowCount;
     push();
@@ -77,14 +84,30 @@ function drawGrid(w, h) {
             let shift = s.oscAmplitude * sin(frameCount * s.oscFrequency);
             shift += s.oscAmplitude * sin(frameCount * (s.oscFrequency + i / s.columnCount * s.oscModFrequency));
             shift += s.oscAmplitude * sin(frameCount * (s.oscFrequency + j / s.rowCount * s.oscModFrequency));
-            translate(i * cellWidth + cellWidth / 2 + shift, j * cellHeight + cellHeight / 2); // centering
-            rotate(j / s.rowCount * s.maxRotation * PI/180);
-            rectByCenter(0, 0, s.rectWidth, cellHeight);
-            // rectByCenter(i * cellWidth, j * cellHeight, s.rectWidth, cellHeight);
+            translate(i * cellWidth + cellWidth / 2 + shift + random(-1, 1) * s.randomDisplacementAmplitude, j * cellHeight + cellHeight / 2 + random(-1, 1) * s.randomDisplacementAmplitude); // centering
+            rotate(sin(i / 10 + j / 2) * s.maxRotation * PI/180);
+            // rectByCenter(0, 0, s.rectWidth, cellHeight);
+            polygon(0, 0, s.rectWidth, s.rectAspectRatio, s.polygonPointCount);
             pop();
             k++;
         }
     }
+    pop();
+}
+
+function polygon(x, y, radius, ratio, pointCount) {
+    let angle = TWO_PI / pointCount;
+    push();
+    translate(x, y);
+    scale(1, ratio);
+    rotate(-angle/2);
+    beginShape();
+    for (let a = 0; a < TWO_PI; a += angle) {
+        let sx = cos(a) * radius;
+        let sy = sin(a) * radius;
+        vertex(sx, sy);
+    }
+    endShape(CLOSE);
     pop();
 }
 
@@ -93,7 +116,6 @@ function rectByCenter(x, y, w, h) {
     translate(-w/2, -h/2);
     rect(x, y, w, h);
     pop();
-
 }
 
 function keyTyped() {
