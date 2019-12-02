@@ -2,29 +2,53 @@ let s;
 let webImage;
 
 function preload() {
-    webImage = loadImage("https://images.unsplash.com/photo-1500462918059-b1a0cb512f1d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80");
+    webImages = [];
+    webImages.push(loadImage("https://images.unsplash.com/photo-1500462918059-b1a0cb512f1d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80"));
+    webImages.push(loadImage("https://images.unsplash.com/photo-1575111100086-59332d3e47bd?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80"));
 }
 
 function setup() {
     createCanvas(600, 600);
     s = {}
-    s.bgColor = color(33);
+    s.bgColor = '#222222';
     s.rowCount = 50;
     s.columnCount = 15;
-    initColors();
     s.rectWidth = 8;
     s.oscAmplitude = 20;
-    s.oscFrequency = 0.10;
+    s.oscFrequency = 0.1;
+    s.activeImageIndex = 0;
+    background(s.bgColor);
+    initColors();
     let gui= new dat.GUI();
+    let columnController = gui.add(s, 'columnCount', 1 ,200);
+    let rowController = gui.add(s, 'rowCount', 1 ,200);
+    let activeImageIndexController = gui.add(s, 'activeImageIndex', [...webImages.keys()]);
+    gui.add(s, 'rectWidth', 0, 100).name('largeur rectange');
+
+    activeImageIndexController.onChange(value => {
+        s.activeImageIndex = value;
+        initColors();
+    })
+    columnController.onChange(value => {
+        s.columnCount = floor(value);
+        initColors();
+    });
+    rowController.onChange(value => {
+        s.rowCount = floor(value);
+        initColors();
+    });
     gui.add(s, 'rectWidth',0, 100);
     gui.add(s, 'oscFrequency',0, 1);
     gui.add(s, 'oscAmplitude',0, 100);
     gui.add(s, 'rowCount',0, 100);
     gui.add(s, 'columnCount',0, 100);
+    gui.add(this, 'initColors');
+    gui.add(s, 'bgColor');
 }
 
 function initColors(){
     s.rectColors = [];
+    let webImage = webImages[s.activeImageIndex];
     s.seed = floor(random(1000));
     for (let i = 0; i < s.rowCount * s.columnCount; i++){
         let x = random(0, webImage.width)
