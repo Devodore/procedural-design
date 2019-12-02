@@ -20,10 +20,9 @@ function setup() {
     background(s.bgColor);
     initColors();
     let gui= new dat.GUI();
-    let columnController = gui.add(s, 'columnCount', 1 ,200);
-    let rowController = gui.add(s, 'rowCount', 1 ,200);
-    let activeImageIndexController = gui.add(s, 'activeImageIndex', [...webImages.keys()]);
-    gui.add(s, 'rectWidth', 0, 100).name('largeur rectange');
+    let columnController = gui.add(s, 'columnCount', 1 ,200).name('nombre de colonnes');
+    let rowController = gui.add(s, 'rowCount', 1 ,200).name('nombre de lignes');
+    let activeImageIndexController = gui.add(s, 'activeImageIndex', [...webImages.keys()]).name('Image numéro');
 
     activeImageIndexController.onChange(value => {
         s.activeImageIndex = value;
@@ -37,13 +36,13 @@ function setup() {
         s.rowCount = floor(value);
         initColors();
     });
-    gui.add(s, 'rectWidth',0, 100);
-    gui.add(s, 'oscFrequency',0, 1);
-    gui.add(s, 'oscAmplitude',0, 100);
-    gui.add(s, 'rowCount',0, 100);
-    gui.add(s, 'columnCount',0, 100);
-    gui.add(this, 'initColors');
-    gui.add(s, 'bgColor');
+    gui.add(s, 'rectWidth', 0, 100).name('largeur rectange');
+    gui.add(s, 'oscFrequency',0, 1).name('Fréquence mouvement');
+    gui.add(s, 'oscAmplitude',0, 100).name('Amplitude de mouvement');
+    //gui.add(s, 'rowCount',0, 100).name('nombre de lignes');
+    //gui.add(s, 'columnCount',0, 100).name('nombre de colonnes');
+    //gui.add(this, 'initColors');
+    gui.add(s, 'bgColor').name('Couleur de fond');
 }
 
 function initColors(){
@@ -79,6 +78,7 @@ function drawGrid(w, h) {
             push();
             let shift = s.oscAmplitude * sin(frameCount * s.oscFrequency+j);
             shift+= s.oscAmplitude * sin(frameCount * (s.oscFrequency +j / s.rowCount * s.oscFrequency));
+            shift+= s.oscAmplitude * sin(frameCount * (s.oscFrequency +j / s.columnCount * s.oscFrequency));
             translate((cellWidth - s.rectWidth) / 2 + shift, 0);
             rect(i * cellWidth, j* cellHeight, s.rectWidth, cellHeight);
             pop();
